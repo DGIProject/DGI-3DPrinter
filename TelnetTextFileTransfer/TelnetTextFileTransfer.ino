@@ -7,13 +7,13 @@ const int timeout = 15000;
 EthernetServer server(80);
 
 unsigned long cTime = 0, sTime = 0;
-enum Modes{ BASE, FTP };
+enum Modes { BASE, FTP };
 enum States { NOTHING, FTP_WRITE };
 Modes currentMode = BASE;
 States currentState = NOTHING;
 
-void setup() { 
-  
+void setup() {
+
   Serial.begin(9600);
 
   // start the Ethernet connection and the server:
@@ -56,8 +56,8 @@ void loop() {
         if (c != '\n' && c != '\r') {
           cmd += c;
         }
-      
-        
+
+
         //Serial.write(c);
         client.print("");
         // if you've gotten to the end of the line (received a newline
@@ -86,15 +86,15 @@ void loop() {
 
       if (cTime - sTime >= timeout)
       {
-        client.println("no message since 5s: closing connection");
+        bc("no message since "+String(timeout/1000)+"s: closing connection", client);
         break;
       }
     }
 
     // close the connection:
-    client.println("Closing connection");
     client.stop();
-    Serial.println("client disconnected");
+    bc("Closing connection", client);
+    //Serial.println("client disconnected");
   }
 
 
@@ -106,6 +106,7 @@ void parseCmd(String cmd, EthernetClient client)
   {
     case FTP :
       parseFTPCmd(cmd, client);
+
       break;
     default :
       if (cmd == "ftp" )
@@ -114,6 +115,7 @@ void parseCmd(String cmd, EthernetClient client)
         bc("------------------------", client);
         bc("         FTP MODE       ", client);
         bc("------------------------", client);
+        bc("FTP > ", client);
       }
   }
 
@@ -125,13 +127,25 @@ void parseFTPCmd(String cmd, EthernetClient client)
   switch (currentState)
   {
     case FTP_WRITE :
+      if (quitCmd(cmd))
+      {
+        currentState = NOTHING;
+        bc("Back to FTP prompt", client);
+      }
       break;
     default :
-      if (cmd == "write")
+      bc("FTP > ", client);
+      if(quitCmd(cmd))
+      {
+        currentMode = BASE;
+        bc("Back to prompt", client);
+      }
+      else if (cmd == "write")
       {
         currentState = FTP_WRITE;
         bc("New File, with name 'tttt'", client);
       }
+       
   }
 }
 
@@ -139,5 +153,11 @@ void bc(String mes, EthernetClient client )
 {
   Serial.println(mes);
   client.println(mes);
+
+}
+bool quitCmd(String cmd)
+{
+  return (cmd == "Quit");
+
 }
 
