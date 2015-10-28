@@ -17,10 +17,10 @@ Errors currentEr = OK;
 void setup() {
 
   Serial.begin(9600);
-
+  Serial.println("DHCP config");
   // start the Ethernet connection and the server:
   // DHCP get config  and print it
-  Ethernet.begin(mac, 53);
+  Ethernet.begin(mac, 48);
 
   Serial.print("localIP: ");
   Serial.println(Ethernet.localIP());
@@ -95,9 +95,8 @@ void loop() {
     }
 
     // close the connection:
-    client.stop();
     bc("Closing connection", client);
-    //Serial.println("client disconnected");
+    client.stop();
   }
 
 
