@@ -9,9 +9,11 @@ EthernetServer server(80);
 unsigned long cTime = 0, sTime = 0;
 enum Modes { BASE, FTP };
 enum States { NOTHING, FTP_WRITE };
+enum Errors { OK, CMD_NFOUND };
+
 Modes currentMode = BASE;
 States currentState = NOTHING;
-
+Errors currentEr = OK;
 void setup() {
 
   Serial.begin(9600);
@@ -70,6 +72,7 @@ void loop() {
           //starting a new line
           Serial.println(cmd);
           parseCmd(cmd, client);
+          errorDisplay(client);
           cmd = "";
 
           currentLineIsBlank = true;
@@ -86,7 +89,7 @@ void loop() {
 
       if (cTime - sTime >= timeout)
       {
-        bc("no message since "+String(timeout/1000)+"s: closing connection", client);
+        bc("no message since " + String(timeout / 1000) + "s: closing connection", client);
         break;
       }
     }
@@ -106,7 +109,6 @@ void parseCmd(String cmd, EthernetClient client)
   {
     case FTP :
       parseFTPCmd(cmd, client);
-
       break;
     default :
       if (cmd == "ftp" )
@@ -116,6 +118,10 @@ void parseCmd(String cmd, EthernetClient client)
         bc("         FTP MODE       ", client);
         bc("------------------------", client);
         bc("FTP > ", client);
+      }
+      else
+      {
+        currentEr = CMD_NFOUND;
       }
   }
 
@@ -135,7 +141,7 @@ void parseFTPCmd(String cmd, EthernetClient client)
       break;
     default :
       bc("FTP > ", client);
-      if(quitCmd(cmd))
+      if (quitCmd(cmd))
       {
         currentMode = BASE;
         bc("Back to prompt", client);
@@ -145,7 +151,11 @@ void parseFTPCmd(String cmd, EthernetClient client)
         currentState = FTP_WRITE;
         bc("New File, with name 'tttt'", client);
       }
-       
+      else
+      {
+        currentEr = CMD_NFOUND;
+      }
+
   }
 }
 
@@ -153,11 +163,26 @@ void bc(String mes, EthernetClient client )
 {
   Serial.println(mes);
   client.println(mes);
-
 }
+
 bool quitCmd(String cmd)
 {
   return (cmd == "Quit");
 
+}
+
+void errorDisplay(EthernetClient client )
+{
+  switch (currentEr)
+  {
+    case CMD_NFOUND:
+      bc("Command not found", client);
+      break;
+    case OK :
+    break;
+    default :
+      bc("Unexpected Error", client);
+  }
+  currentEr = OK;
 }
 
