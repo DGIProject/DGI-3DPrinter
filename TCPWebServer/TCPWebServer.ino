@@ -7,13 +7,14 @@ const int timeout = 15000;
 EthernetServer server(80);
 
 unsigned long cTime = 0, sTime = 0;
+String cmd = "";
 
 void setup() {
   Serial.begin(9600);
 
   // start the Ethernet connection and the server:
   // DHCP get config  and print it
-  Ethernet.begin(mac);
+  Ethernet.begin(mac, 53);
 
   Serial.print("localIP: ");
   Serial.println(Ethernet.localIP());
@@ -47,7 +48,10 @@ void loop() {
         cTime = millis() + 1;
 
         char c = client.read();
-        Serial.write(c);
+        if (c != '\n' && c != '\r') {
+        cmd += c;
+        }
+        //Serial.write(c);
         client.print("");
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
@@ -57,14 +61,17 @@ void loop() {
         }
         if (c == '\n') {
           //starting a new line
+          Serial.println(cmd);
+          cmd="";
           currentLineIsBlank = true;
         }
-        else if (c != '\r') {
+        else if (c != '\r') {      
           // you've gotten a character on the current line
           currentLineIsBlank = false;
         }
 
       }
+      
 
       //Serial.print(cTime); Serial.print(" ") ;Serial.print(sTime);  Serial.print(" ") ;Serial.println(cTime-sTime);
 
@@ -76,6 +83,7 @@ void loop() {
     }
 
     // close the connection:
+    client.println("Closing connection");
     client.stop();
     Serial.println("client disconnected");
   }
