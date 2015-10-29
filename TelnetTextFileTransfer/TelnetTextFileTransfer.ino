@@ -10,7 +10,7 @@ EthernetServer server(80);
 unsigned long cTime = 0, sTime = 0;
 enum Modes { BASE, FTP };
 enum States { NOTHING, FTP_WRITE };
-enum Errors { OK, CMD_NFOUND };
+enum Errors { OK, CMD_NFOUND, SYNTAX_ER };
 
 Modes currentMode = BASE;
 States currentState = NOTHING;
@@ -21,6 +21,10 @@ String getArg(String cmd, byte pos = 0)
   byte i = 0, curPos = 0;
   String arg = "";
   bool first = false, second = false;
+
+  if (pos == 0)
+    return cmd.substring(0, cmd.indexOf(IFS));
+
   for (i = 0; i < cmd.length(); i++)
   {
     if (cmd.charAt(i) == IFS)
@@ -54,13 +58,6 @@ String getArg(String cmd, byte pos = 0)
 void setup() {
 
   Serial.begin(9600);
-
-  String test = "cmd arg1";
-  Serial.print("foundedArg: ");
-  String t = getArg(test, 2);
-  Serial.println(t);
-
-
   Serial.println("DHCP config");
   // start the Ethernet connection and the server:
   // DHCP get config  and print it
@@ -154,7 +151,7 @@ void parseCmd(String cmd, EthernetClient client)
       parseFTPCmd(cmd, client);
       break;
     default :
-      if (cmd == "ftp" )
+      if (getArg(cmd) == "ftp" )
       {
         currentMode = FTP;
         bc("------------------------", client);
@@ -198,16 +195,23 @@ void parseFTPCmd(String cmd, EthernetClient client)
       }
       break;
     default :
-      bc("FTP > ", client);
-      if (quitCmd(cmd))
+      bc("FTP > ", client);    
+      if (quitCmd(getArg(cmd)))
       {
         currentMode = BASE;
         bc("Back to prompt", client);
       }
-      else if (cmd == "write")
+      else if ( getArg(cmd) == "write")
       {
-        currentState = FTP_WRITE;
-        bc("New File, with name 'tttt'", client);
+        if (getArg(cmd, 1) != "")
+        {
+          currentState = FTP_WRITE;
+          bc("New File, with name " + String(getArg(cmd, 1)), client);
+        }
+        else
+        {
+          currentEr = SYNTAX_ER;
+        }
       }
       else
       {
@@ -226,7 +230,6 @@ void bc(String mes, EthernetClient client )
 bool quitCmd(String cmd)
 {
   return (cmd == "Quit");
-
 }
 
 void errorDisplay(EthernetClient client )
@@ -235,6 +238,9 @@ void errorDisplay(EthernetClient client )
   {
     case CMD_NFOUND:
       bc("Command not found", client);
+      break;
+    case SYNTAX_ER:
+      bc("Syntax error", client);
       break;
     case OK :
       break;
