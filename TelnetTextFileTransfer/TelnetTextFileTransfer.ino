@@ -25,25 +25,25 @@ String getArg(String cmd, byte pos = 0)
 
   if (pos == 0)
     return cmd.substring(0, cmd.indexOf(IFS));
-  Serial.print("continue ");
+  //Serial.print("continue ");
 
   for (i = 0; i < cmd.length(); i++)
   {
     if (cmd.charAt(i) == IFS)
     {
-      Serial.print(" IFS at " + String(i) + " ");
+      //Serial.print(" IFS at " + String(i) + " ");
       second = (first) ? true : false;
-      Serial.print(" Sec  " + String(((first) ? "true" : "false")) + " ");
+      //Serial.print(" Sec  " + String(((first) ? "true" : "false")) + " ");
       first = true;
       if (first && second)
       {
         curPos++;
-        Serial.print(" arg "+String(curPos)+" ");
+        //Serial.print(" arg "+String(curPos)+" ");
         first = true;
         second = false;
-        if (curPos == pos)          
+        if (curPos == pos)
           return arg;
-        arg="";
+        arg = "";
       }
 
     }
@@ -54,26 +54,13 @@ String getArg(String cmd, byte pos = 0)
     }
 
   }
-
-  /*  if ((pos - 1) > curPos)
-    {
-      arg = "";
-    }*/
-    return arg;
+  return arg;
 
 }
 
 void setup() {
 
   Serial.begin(115200);
-
-
-  Serial.println(getArg("cmd arg"));
-  Serial.println(getArg("cmd arg atrg ", 2));
-  Serial.println(getArg("cmd arg atrg ", 1));
-  Serial.println(getArg("cmd arg atrg", 1));
-  Serial.println(getArg("cmd arg atrg sdfsd", 3));
-  Serial.println(getArg("cmd arg atrg sdfsd ", 3));
 
   Serial.println("DHCP config");
   // start the Ethernet connection and the server:
