@@ -3,6 +3,7 @@
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 const int timeout = 15000;
+const char IFS = ' ';
 
 EthernetServer server(80);
 
@@ -14,9 +15,52 @@ enum Errors { OK, CMD_NFOUND };
 Modes currentMode = BASE;
 States currentState = NOTHING;
 Errors currentEr = OK;
+
+String getArg(String cmd, byte pos = 0)
+{
+  byte i = 0, curPos = 0;
+  String arg = "";
+  bool first = false, second = false;
+  for (i = 0; i < cmd.length(); i++)
+  {
+    if (cmd.charAt(i) == IFS)
+    {
+      second = (first) ? true : false;
+      first = true;
+      if (first && second)
+      {
+        curPos++; first = true; second = false;
+        if (curPos == pos)
+          return arg;
+      }
+
+    }
+    else
+    {
+      if (first)
+        arg += cmd.charAt(i);
+    }
+
+  }
+
+  if ((pos - 1) > curPos)
+  {
+    arg = "";
+  }
+  return arg;
+
+}
+
 void setup() {
 
   Serial.begin(9600);
+
+  String test = "cmd arg1";
+  Serial.print("foundedArg: ");
+  String t = getArg(test, 2);
+  Serial.println(t);
+
+
   Serial.println("DHCP config");
   // start the Ethernet connection and the server:
   // DHCP get config  and print it
@@ -127,8 +171,23 @@ void parseCmd(String cmd, EthernetClient client)
 
 }
 
+
+
+byte getArgNumber(String cmd)
+{
+  byte i = 0;
+  byte argNumber = 0;
+  for (i = 0; i < cmd.length(); i++)
+  {
+    if (cmd.charAt(i) == IFS)
+      argNumber++;
+  }
+  return argNumber;
+}
+
 void parseFTPCmd(String cmd, EthernetClient client)
 {
+
   switch (currentState)
   {
     case FTP_WRITE :
@@ -178,7 +237,7 @@ void errorDisplay(EthernetClient client )
       bc("Command not found", client);
       break;
     case OK :
-    break;
+      break;
     default :
       bc("Unexpected Error", client);
   }
