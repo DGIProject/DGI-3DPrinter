@@ -11,6 +11,7 @@ unsigned long cTime = 0, sTime = 0;
 enum Modes { BASE, FTP };
 enum States { NOTHING, FTP_WRITE };
 enum Errors { OK, CMD_NFOUND, SYNTAX_ER };
+long int fileSize = 0, receivedSize = 0;
 
 Modes currentMode = BASE;
 States currentState = NOTHING;
@@ -24,18 +25,25 @@ String getArg(String cmd, byte pos = 0)
 
   if (pos == 0)
     return cmd.substring(0, cmd.indexOf(IFS));
+  Serial.print("continue ");
 
   for (i = 0; i < cmd.length(); i++)
   {
     if (cmd.charAt(i) == IFS)
     {
+      Serial.print(" IFS at " + String(i) + " ");
       second = (first) ? true : false;
+      Serial.print(" Sec  " + String(((first) ? "true" : "false")) + " ");
       first = true;
       if (first && second)
       {
-        curPos++; first = true; second = false;
-        if (curPos == pos)
+        curPos++;
+        Serial.print(" arg "+String(curPos)+" ");
+        first = true;
+        second = false;
+        if (curPos == pos)          
           return arg;
+        arg="";
       }
 
     }
@@ -47,20 +55,30 @@ String getArg(String cmd, byte pos = 0)
 
   }
 
-  if ((pos - 1) > curPos)
-  {
-    arg = "";
-  }
-  return arg;
+  /*  if ((pos - 1) > curPos)
+    {
+      arg = "";
+    }*/
+    return arg;
 
 }
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+
+
+  Serial.println(getArg("cmd arg"));
+  Serial.println(getArg("cmd arg atrg ", 2));
+  Serial.println(getArg("cmd arg atrg ", 1));
+  Serial.println(getArg("cmd arg atrg", 1));
+  Serial.println(getArg("cmd arg atrg sdfsd", 3));
+  Serial.println(getArg("cmd arg atrg sdfsd ", 3));
+
   Serial.println("DHCP config");
   // start the Ethernet connection and the server:
   // DHCP get config  and print it
+
   Ethernet.begin(mac, 48);
 
   Serial.print("localIP: ");
@@ -164,8 +182,6 @@ void parseCmd(String cmd, EthernetClient client)
         currentEr = CMD_NFOUND;
       }
   }
-
-
 }
 
 
@@ -191,22 +207,32 @@ void parseFTPCmd(String cmd, EthernetClient client)
       if (quitCmd(cmd))
       {
         currentState = NOTHING;
+        fileSize = 0; receivedSize = 0;
         bc("Back to FTP prompt", client);
+        break;
       }
+
+      receivedSize++;
+
+      client.print(((double)receivedSize / fileSize) * 100);
+      client.println("%");
       break;
     default :
-      bc("FTP > ", client);    
+      bc("FTP > ", client);
       if (quitCmd(getArg(cmd)))
       {
         currentMode = BASE;
         bc("Back to prompt", client);
+
       }
       else if ( getArg(cmd) == "write")
       {
         if (getArg(cmd, 1) != "")
         {
           currentState = FTP_WRITE;
+          fileSize = getArg(cmd, 2).toInt();
           bc("New File, with name " + String(getArg(cmd, 1)), client);
+          bc("Waiting " + String(getArg(cmd, 2)) + " For Data ...", client);
         }
         else
         {
