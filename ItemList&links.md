@@ -17,3 +17,13 @@ Links
  - http://www.robot-maker.com/forum/topic/10022-moteur-et-tige-filtee/page-2#entry65498
  - http://reprap.org/wiki/G-code/fr
  - http://slic3r.org/
+ - http://www.makershop.fr/content/43-guide-achat-filament-resine-impression-3d
+ - http://www.priceminister.com/offer/buy/846339678/j-head-hotend-0-4mm-nozzle-1-75-3mm-long-range-for-3d-printer-makerbot-extruder.html
+ - http://reprap.org/wiki/CncExtruder
+ 
+ Project 
+ =======
+ - https://github.com/gallegojm/Arduino-Ftp-Server/tree/master/FtpServer
+ - https://github.com/jcw/ethercard
+ - https://github.com/ntruchsess/arduino_uip
+ - https://github.com/adamvr/arduino-base64
