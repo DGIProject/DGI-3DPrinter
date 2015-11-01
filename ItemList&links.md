@@ -27,3 +27,14 @@ Links
  - https://github.com/jcw/ethercard
  - https://github.com/ntruchsess/arduino_uip
  - https://github.com/adamvr/arduino-base64
+ - http://arduino-pi.blogspot.fr/2014/04/arduino-sketch-to-manage-high.html
+ - https://www.youtube.com/watch?v=ge4cFOpa1i0
+ 
+ Part information taken from hp printer
+ ======================================
+ 
+ - rotary encoder : http://reprap.org/wiki/Optical_encoders_01
+ - pinout : http://reprap.org/wiki/File:FD_opto_sensor_pinout_02.JPG
+ - pinout : http://reprap.org/wiki/File:FD_opto_sensor_pinout_05.JPG
+ - pinout : http://reprap.org/wiki/File:FD_opto_sensor_pinout_04.JPG
+ 
